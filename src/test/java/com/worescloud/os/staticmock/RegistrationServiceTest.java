@@ -7,9 +7,11 @@ import org.testng.annotations.Test;
 import static com.worescloud.os.staticmock.StaticMockito.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
+@SuppressWarnings("ALL")
 public class RegistrationServiceTest {
 
 	static {
@@ -43,7 +45,6 @@ public class RegistrationServiceTest {
 		verify(mocker(ClientUtility.class)).toClientId(clientName);
 	}
 
-	@SuppressWarnings("AccessStaticViaInstance")
 	@Test
 	public void shouldUnregisterClientFailed() {
 		// Given
@@ -59,6 +60,20 @@ public class RegistrationServiceTest {
 		// Verify
 		verify(mocker(ClientUtility.class)).toClientId(clientName);
 		verify(mocker(ClientUtility.class), never()).toClientId("other client");
+	}
+
+	@Test
+	public void shouldObtainClientName() {
+
+		// Given
+		String clientId = "C01";
+		when(ClientUtility.toClientName(clientId)).thenCallRealMethod();
+
+		// Execute
+		String result = registrationService.toClientName(clientId);
+
+		// Assert
+		assertEquals(result, "clientName with ID (C01)");
 	}
 
 }

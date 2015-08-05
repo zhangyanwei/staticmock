@@ -12,4 +12,8 @@ public class RegistrationService {
 		return !INUSED_CLIENTS.contains(clientId);
 	}
 
+	public String toClientName(String clientId) {
+		return ClientUtility.toClientName(clientId);
+	}
+
 }

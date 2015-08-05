@@ -18,6 +18,7 @@ public final class StaticMockito {
 
 		try {
 			ClassPool pool = ClassPool.getDefault();
+			CtClass realClass = pool.getAndRename(className, className + "$_Copy");
 			CtClass ctClass = pool.get(className);
 
 			ctClass.setModifiers(ctClass.getModifiers() & ~FINAL);
@@ -40,17 +41,16 @@ public final class StaticMockito {
 						declaredMethod.getName(),
 						declaredMethod.getParameterTypes(),
 						declaredMethod.getExceptionTypes(),
-						voidType ? null : "{return null;}",
+						toBody(realClass.getName(), declaredMethod, voidType),
 						staticMockerClass
 				);
 				staticMockerClass.addMethod(method);
-				declaredMethod.setBody(format(
-						"{%s %s.%s($$);}", voidType ? "" : "return", FIELD_NAME, declaredMethod.getName()
-				));
+				declaredMethod.setBody(toBody(FIELD_NAME, declaredMethod, voidType));
 			}
 
 			// Load the modified class into current class loader.
 			ctClass.toClass();
+			realClass.toClass();
 			staticMockerClass.toClass();
 		} catch (NotFoundException | CannotCompileException ignore) {
 			ignore.printStackTrace();
@@ -80,6 +80,10 @@ public final class StaticMockito {
 
 		//noinspection unchecked
 		return (T) innerMock;
+	}
+
+	private static String toBody(String fieldName, CtMethod declaredMethod, boolean voidType) {
+		return format("{%s %s.%s($$);}", voidType ? "" : "return", fieldName, declaredMethod.getName());
 	}
 
 }
